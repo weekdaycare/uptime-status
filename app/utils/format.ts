@@ -18,7 +18,7 @@ export const formatSiteData = (
 ): MonitorsDataResult | undefined => {
   if (!data?.monitors) return undefined;
   const { public: configPublic } = useRuntimeConfig();
-  const { showLink, allowedUrls } = configPublic;
+  const { showLink } = configPublic;
   const sites: any[] = data.monitors;
   // 解析站点数据
   const formatData = sites?.map((site: any): SiteStatusType => {
@@ -57,18 +57,28 @@ export const formatSiteData = (
     });
     // 决定是否显示URL
     let displayUrl: string | undefined;
-    if (showLink && site?.url) {
-      // 如果设置了allowedUrls白名单，只显示在列表中的URL
-      if (allowedUrls && allowedUrls.length > 0) {
-        displayUrl = allowedUrls.some(allowed => {
-          const siteHostname = new URL(site.url).hostname;
-          const allowedHostname = new URL(allowed).hostname || allowed;
-          return siteHostname === allowedHostname;
-          } 
-        ) ? site.url : undefined;
-      } else {
-        // 否则显示所有URL
+    if (site?.url) {
+      // showLink 为 "false" 时不显示
+      if (showLink === "false") {
+        displayUrl = undefined;
+      }
+      // showLink 为 "true" 时显示所有
+      else if (showLink === "true") {
         displayUrl = site.url;
+      }
+      // 否则 showLink 为逗号分隔的 URL 列表，只显示白名单内的
+      else {
+        const allowedUrls = showLink.split(",").map(url => url.trim());
+        displayUrl = allowedUrls.some(allowed => {
+          try {
+            const siteHostname = new URL(site.url).hostname?.toLowerCase();
+            const allowedHostname = (new URL(allowed).hostname || allowed).toLowerCase();
+            return siteHostname === allowedHostname;
+          } catch {
+            // URL解析失败时进行精确匹配
+            return site.url.toLowerCase() === allowed.toLowerCase();
+          }
+        }) ? site.url : undefined;
       }
     }
 
