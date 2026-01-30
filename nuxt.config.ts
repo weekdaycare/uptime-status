@@ -13,7 +13,8 @@ const siteConfig = {
   siteLogo: process.env.SITE_LOGO || "/favicon.ico",
   siteIcp: process.env.SITE_ICP || "",
   countDays: Number(process.env.COUNT_DAYS || 60),
-  showLink: process.env.SHOW_LINK === "true" || true,
+  showLink: process.env.SHOW_LINK !== "false",
+  allowedUrls: process.env.ALLOWED_URLS ? process.env.ALLOWED_URLS.split(",").map(url => url.trim()) : [],
   platform: process.env.DEPLOYMENT_PLATFORM || "cloudflare",
   version: pkg.version,
 };

@@ -18,7 +18,7 @@ export const formatSiteData = (
 ): MonitorsDataResult | undefined => {
   if (!data?.monitors) return undefined;
   const { public: configPublic } = useRuntimeConfig();
-  const { showLink } = configPublic;
+  const { showLink, allowedUrls } = configPublic;
   const sites: any[] = data.monitors;
   // 解析站点数据
   const formatData = sites?.map((site: any): SiteStatusType => {
@@ -55,10 +55,22 @@ export const formatSiteData = (
         total.duration += log.duration;
       }
     });
+    // 决定是否显示URL
+    let displayUrl: string | undefined;
+    if (showLink && site?.url) {
+      // 如果设置了allowedUrls白名单，只显示在列表中的URL
+      if (allowedUrls && allowedUrls.length > 0) {
+        displayUrl = allowedUrls.some(allowed => site.url.includes(allowed)) ? site.url : undefined;
+      } else {
+        // 否则显示所有URL
+        displayUrl = site.url;
+      }
+    }
+
     return {
       id: site.id,
       name: site?.friendly_name || "未命名站点",
-      url: showLink ? site?.url : undefined,
+      url: displayUrl,
       status: site?.status ?? 8,
       type: site?.type ?? 1,
       interval: site?.interval ?? 0,
