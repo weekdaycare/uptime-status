@@ -77,10 +77,7 @@ export const formatSiteData = (
     else {
       const allowedUrls = showLink.split(",").map(url => getHostname(url.trim()));
       const siteHostname = getHostname(site.url);
-      displayUrl = allowedUrls.some(allowed => {
-        const allowedHostname = getHostname(allowed);
-        return siteHostname === allowedHostname;
-      }) ? site.url : undefined;
+      displayUrl = allowedUrls.includes(siteHostname) ? site.url : undefined;
     }
 
     return {
