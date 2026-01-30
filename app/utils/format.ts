@@ -60,7 +60,12 @@ export const formatSiteData = (
     if (showLink && site?.url) {
       // 如果设置了allowedUrls白名单，只显示在列表中的URL
       if (allowedUrls && allowedUrls.length > 0) {
-        displayUrl = allowedUrls.some(allowed => site.url.includes(allowed)) ? site.url : undefined;
+        displayUrl = allowedUrls.some(allowed => {
+          const siteHostname = new URL(site.url).hostname;
+          const allowedHostname = new URL(allowed).hostname || allowed;
+          return siteHostname === allowedHostname;
+          } 
+        ) ? site.url : undefined;
       } else {
         // 否则显示所有URL
         displayUrl = site.url;
