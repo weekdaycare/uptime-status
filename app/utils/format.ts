@@ -55,10 +55,35 @@ export const formatSiteData = (
         total.duration += log.duration;
       }
     });
+    // 决定是否显示URL
+    let displayUrl: string | undefined;
+
+    // 辅助函数：安全地获取 URL 的 hostname
+    const getHostname = (url: string): string | null => {
+      // 如果 URL 没有协议头，添加 https://
+      const urlWithProtocol = /^https?:\/\//.test(url) ? url : `https://${url}`;
+      return new URL(urlWithProtocol).hostname?.toLowerCase() || null;
+    };
+
+    // showLink 为 "false" 时不显示
+    if (showLink === "false") {
+      displayUrl = undefined;
+    }
+    // showLink 为 "true" 时显示所有
+    else if (showLink === "true") {
+      displayUrl = site.url;
+    }
+    // 否则 showLink 为逗号分隔的 URL 列表，只显示白名单内的
+    else {
+      const allowedUrls = showLink.split(",").map(url => getHostname(url.trim()));
+      const siteHostname = getHostname(site.url);
+      displayUrl = allowedUrls.includes(siteHostname) ? site.url : undefined;
+    }
+
     return {
       id: site.id,
       name: site?.friendly_name || "未命名站点",
-      url: showLink ? site?.url : undefined,
+      url: displayUrl,
       status: site?.status ?? 8,
       type: site?.type ?? 1,
       interval: site?.interval ?? 0,
