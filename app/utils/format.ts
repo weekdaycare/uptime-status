@@ -58,6 +58,13 @@ export const formatSiteData = (
     // 决定是否显示URL
     let displayUrl: string | undefined;
 
+    // 辅助函数：安全地获取 URL 的 hostname
+    const getHostname = (url: string): string | null => {
+      // 如果 URL 没有协议头，添加 https://
+      const urlWithProtocol = /^https?:\/\//.test(url) ? url : `https://${url}`;
+      return new URL(urlWithProtocol).hostname?.toLowerCase() || null;
+    };
+
     // showLink 为 "false" 时不显示
     if (showLink === "false") {
       displayUrl = undefined;
@@ -68,10 +75,10 @@ export const formatSiteData = (
     }
     // 否则 showLink 为逗号分隔的 URL 列表，只显示白名单内的
     else {
-      const allowedUrls = showLink.split(",").map(url => url.trim());
+      const allowedUrls = showLink.split(",").map(url => getHostname(url.trim()));
+      const siteHostname = getHostname(site.url);
       displayUrl = allowedUrls.some(allowed => {
-        const siteHostname = new URL(site.url).hostname;
-        const allowedHostname = new URL(allowed).hostname;
+        const allowedHostname = getHostname(allowed);
         return siteHostname === allowedHostname;
       }) ? site.url : undefined;
     }
